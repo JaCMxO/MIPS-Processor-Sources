@@ -29,6 +29,7 @@ module ALU
 localparam ADD		= 4'b0011;
 localparam SUB		= 4'b0100;
 localparam OR 		= 4'b0010;
+localparam LUI 		= 4'b0101;
 
 
 	always @ (a_i or b_i or alu_operation_i)
@@ -43,6 +44,9 @@ localparam OR 		= 4'b0010;
 
 			SUB:	//sub
 				alu_data_o = a_i - b_i;
+
+			LUI:	//Load Upper Immediate
+				alu_data_o = {b_i[15:0], 16'b0};
 
 			default:
 				alu_data_o = 0;
