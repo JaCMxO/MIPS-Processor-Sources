@@ -26,24 +26,28 @@ module ALU
 	output reg [31:0] alu_data_o
 );
 
-localparam ADD = 4'b0011;
+localparam ADD		= 4'b0011;
+localparam OR 		= 4'b0010;
 
-   
-   always @ (a_i or b_i or alu_operation_i)
-     begin
+
+	always @ (a_i or b_i or alu_operation_i)
+    begin
 		case (alu_operation_i)
 		
-		  ADD: // add
-			alu_data_o = a_i + b_i;
+			ADD: // add
+				alu_data_o = a_i + b_i;
 
-			
-			
-		default:
-			alu_data_o = 0;
+			OR:	//or
+				alu_data_o = a_i | b_i;
+
+
+
+			default:
+				alu_data_o = 0;
 		endcase // case(control)
 		
 		zero_o = (alu_data_o == 0) ? 1'b1 : 1'b0;
 		
      end // always @ (A or B or control)
-	  
+
 endmodule // ALU

@@ -82,12 +82,22 @@ PC
 (
 	.clk(clk),
 	.reset(reset),
-	.new_pc_i(pc_plus_4_w)
+	.new_pc_i(pc_plus_4_w),
 	.pc_value_o(pc_w)
 );
 
 
 
+Program_Memory
+#
+(
+	.MEMORY_DEPTH(MEMORY_DEPTH)
+)
+ROM
+(
+	.address_i(pc_w),
+	.instruction_o(instruction_w)
+);
 
 
 
@@ -141,7 +151,7 @@ Sign_Extend
 SIGNED_EXTEND_FOR_CONSTANTS
 (   
 	.data_i(instruction_w[15:0]),
-   .sign_extend_o(inmmediate_extend_w)
+	.sign_extend_o(inmmediate_extend_w)
 );
 
 
