@@ -27,6 +27,7 @@ module ALU
 );
 
 localparam ADD		= 4'b0011;
+localparam SUB		= 4'b0100;
 localparam OR 		= 4'b0010;
 
 
@@ -34,13 +35,14 @@ localparam OR 		= 4'b0010;
     begin
 		case (alu_operation_i)
 		
-			ADD: // add
+			ADD:	// add
 				alu_data_o = a_i + b_i;
 
-			OR:	//or
+			OR:		//or
 				alu_data_o = a_i | b_i;
 
-
+			SUB:	//sub
+				alu_data_o = a_i - b_i;
 
 			default:
 				alu_data_o = 0;
