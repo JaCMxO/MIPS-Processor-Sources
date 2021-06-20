@@ -33,6 +33,6 @@ module Data_Memory
 			ram[address_i] <= write_data_i;
 	end
 	assign read_data_aux = ram[address_i];
-  	assign data_o = {DATA_WIDTH{mem_read_i}}& read_data_aux;
+	assign data_o = {DATA_WIDTH{mem_read_i}} & read_data_aux;
 
 endmodule

@@ -44,6 +44,12 @@ wire reg_dst_w;
 wire alu_rc_w;
 wire reg_write_w;
 wire zero_w;
+wire mem_to_reg_w;
+wire mem_read_w;
+wire mem_write_w;
+wire shift_w;
+wire branch_ne_w;
+wire branch_eq_w;
 wire [2:0] alu_op_w;
 wire [3:0] alu_operation_w;
 wire [4:0] write_register_w;
@@ -55,6 +61,10 @@ wire [31:0] inmmediate_extend_w;
 wire [31:0] read_ata_2_r_nmmediate_w;
 wire [31:0] alu_result_w;
 wire [31:0] pc_plus_4_w;
+wire [31:0] read_data_memory_w;
+wire [31:0] write_back_w;
+wire [31:0] shifted_data_w;
+wire [31:0] write_data_reg_file_w;
 
 
 
@@ -74,7 +84,10 @@ CONTROL_UNIT
 	.branch_eq_o(branch_eq_w),
 	.alu_op_o(alu_op_w),
 	.alu_src_o(alu_rc_w),
-	.reg_write_o(reg_write_w)
+	.reg_write_o(reg_write_w),
+	.mem_read_o(mem_read_w),
+	.mem_to_reg_o(mem_to_reg_w),
+	.mem_write_o(mem_write_w)
 );
 
 Program_Counter
@@ -110,6 +123,33 @@ PC_Puls_4
 	.result_o(pc_plus_4_w)
 );
 
+Data_Memory 
+#
+(	
+	.DATA_WIDTH(32)
+)
+DATA_MEMORY
+(
+	.clk(clk),
+	.mem_read_i(mem_read_w),
+	.mem_write_i(mem_write_w),
+	.write_data_i(read_data_2_w),
+	.address_i(alu_result_w),
+	.data_o(read_data_memory_w)
+);
+
+Multiplexer_2_to_1
+#(
+	.N_BITS(32)
+)
+MUX_READ_DATA_MEM_OR_ALU_RESULT
+(
+	.selector_i(mem_to_reg_w),
+	.data_0_i(alu_result_w),
+	.data_1_i(read_data_memory_w),
+	.mux_o(write_back_w)
+
+);
 
 //******************************************************************/
 //******************************************************************/
@@ -141,7 +181,7 @@ REGISTER_FILE_UNIT
 	.write_register_i(write_register_w),
 	.read_register_1_i(instruction_w[25:21]),
 	.read_register_2_i(instruction_w[20:16]),
-	.write_data_i(alu_result_w),
+	.write_data_i(write_data_reg_file_w),
 	.read_data_1_o(read_data_1_w),
 	.read_data_2_o(read_data_2_w)
 
@@ -192,7 +232,39 @@ ALU_UNIT
 	.alu_data_o(alu_result_w)
 );
 
-assign alu_result_o = alu_result_w;
+
+//******************************************************************/
+//******************************************************************/
+//*********************** MY Modules *******************************/
+//******************************************************************/
+//******************************************************************/
+ShiftLogic
+SHIFTLOGIC_UNIT
+(
+	.sl_opcode_i(instruction_w[31:26]),
+	.sl_shamt_i(instruction_w[10:6]),
+	.sl_func_i(instruction_w[5:0]),
+	.sl_data_i(read_data_2_w),
+	.sl_result_o(shifted_data_w),
+	.sl_shift_o(shift_w)
+);
+
+Multiplexer_2_to_1
+#(
+	.N_BITS(32)
+)
+MUX_SHIFTLOGIC_OR_WRITE_BACK
+(
+	.selector_i(shift_w),
+	.data_0_i(write_back_w),
+	.data_1_i(shifted_data_w),
+	
+	.mux_o(write_data_reg_file_w)
+);
+
+
+
+assign alu_result_o = write_data_reg_file_w;
 
 
 endmodule
