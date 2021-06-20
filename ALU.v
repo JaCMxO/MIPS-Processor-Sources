@@ -30,6 +30,7 @@ localparam ADD		= 4'b0011;
 localparam SUB		= 4'b0100;
 localparam OR 		= 4'b0010;
 localparam AND 		= 4'b0110;
+localparam NOR		= 4'b0111;
 localparam LUI 		= 4'b0101;
 
 
@@ -45,6 +46,9 @@ localparam LUI 		= 4'b0101;
 
 			AND:	//and
 				alu_data_o = a_i & b_i;
+
+			NOR:	//nor
+				alu_data_o = ~(a_i | b_i);
 
 			SUB:	//sub
 				alu_data_o = a_i - b_i;
