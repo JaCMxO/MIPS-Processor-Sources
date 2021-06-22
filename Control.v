@@ -49,7 +49,7 @@ always@(opcode_i) begin
 		I_TYPE_ANDI	: control_values_r = 11'b0_101_00_00_001;
 		I_TYPE_LUI	: control_values_r = 11'b0_101_00_00_110;
 		I_TYPE_SW	: control_values_r = 11'b0_110_01_00_011;
-		I_TYPE_LW	: control_values_r = 11'b0_111_10_00_010;
+		I_TYPE_LW	: control_values_r = 11'b0_111_10_00_011;
 
 		default:
 			control_values_r = 11'b0000000000;
