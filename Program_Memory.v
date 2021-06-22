@@ -25,7 +25,9 @@ module Program_Memory
 
 wire [(DATA_WIDTH-1):0] real_address_r;
 
-assign real_address_r = {2'b0, address_i[(DATA_WIDTH-1):2]};
+//shift 2 times right (divide by 4) and subtract 0x0040_0000 from logical address
+assign real_address_r = {2'b0, address_i[(DATA_WIDTH-1):23], 1'b0, address_i[21:2]};
+
 
 	// Declare the ROM variable
 	reg [DATA_WIDTH-1:0] rom[MEMORY_DEPTH-1:0];
