@@ -1,6 +1,6 @@
 .data
 .text
-	lui		$s0, 0x0000
+	lui		$s0, 0x1001
 	ori		$s1, $s0, 0x24
 	addi	$s2, $zero, 1
 	addi	$s3, $zero, 32
