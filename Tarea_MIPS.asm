@@ -10,6 +10,17 @@
 	
 	sw		$t0, 0($s0)
 	lw		$t7, 0($s0)
+
+	#bne		$t0, $zero, isZero	# if $t0 != $zero then isZero
+	add		$at, $zero, $t0
+	beq		$t0, $at, notZero	# if $t0 == $at then notZero
+
+isZero:
+	addi	$t6, $zero, 7
+
+notZero:
+	addi	$t5, $zero, 8
+	
 	#assign real_address_w = {2'b00, address_i[DATA_WIDTH-1:29], 1'b0, address_i[27:17], 1'b0, address_i[15:2]};
 	#//shift 2 times right (divide by 4) and subtract 0x0040_0000 from logical address
 	#assign real_address_r = {2'b0, address_i[(DATA_WIDTH-1):19], 1'b0, address_i[17:2]};

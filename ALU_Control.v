@@ -32,6 +32,7 @@ localparam I_TYPE_ORI 		= 9'b101_xxxxxx;
 localparam I_TYPE_ANDI 		= 9'b001_xxxxxx;
 localparam I_TYPE_LUI		= 9'b110_xxxxxx;
 localparam I_TYPE_SLW		= 9'b011_xxxxxx;
+localparam I_TYPE_BNE_BEQ	= 9'b010_xxxxxx;
 
 
 reg [3:0] alu_control_values_r;
@@ -43,16 +44,17 @@ always@(selector_w)begin
 
 	casex(selector_w)
 	
-		R_TYPE_ADD	: alu_control_values_r = 4'b0011;
-		I_TYPE_ADDI	: alu_control_values_r = 4'b0011;
-		I_TYPE_ORI	: alu_control_values_r = 4'b0010;
-		R_TYPE_SUB	: alu_control_values_r = 4'b0100;
-		I_TYPE_LUI	: alu_control_values_r = 4'b0101;
-		R_TYPE_OR	: alu_control_values_r = 4'b0010;
-		R_TYPE_AND	: alu_control_values_r = 4'b0110;
-		I_TYPE_ANDI	: alu_control_values_r = 4'b0110;
-		R_TYPE_NOR	: alu_control_values_r = 4'b0111;
-		I_TYPE_SLW	: alu_control_values_r = 4'b0011;
+		R_TYPE_ADD		: alu_control_values_r = 4'b0011;
+		I_TYPE_ADDI		: alu_control_values_r = 4'b0011;
+		I_TYPE_ORI		: alu_control_values_r = 4'b0010;
+		R_TYPE_SUB		: alu_control_values_r = 4'b0100;
+		I_TYPE_LUI		: alu_control_values_r = 4'b0101;
+		R_TYPE_OR		: alu_control_values_r = 4'b0010;
+		R_TYPE_AND		: alu_control_values_r = 4'b0110;
+		I_TYPE_ANDI		: alu_control_values_r = 4'b0110;
+		R_TYPE_NOR		: alu_control_values_r = 4'b0111;
+		I_TYPE_SLW		: alu_control_values_r = 4'b0011;
+		I_TYPE_BNE_BEQ	: alu_control_values_r = 4'b0100;
 
 		default: alu_control_values_r = 4'b1001;
 	endcase

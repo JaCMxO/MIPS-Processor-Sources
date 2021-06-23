@@ -50,6 +50,7 @@ wire mem_write_w;
 wire shift_w;
 wire branch_ne_w;
 wire branch_eq_w;
+wire is_branch_w;
 wire [2:0] alu_op_w;
 wire [3:0] alu_operation_w;
 wire [4:0] write_register_w;
@@ -65,6 +66,9 @@ wire [31:0] read_data_memory_w;
 wire [31:0] write_back_w;
 wire [31:0] shifted_data_w;
 wire [31:0] write_data_reg_file_w;
+wire [31:0] sl2_imm_w;
+wire [31:0] branch_address_w;
+wire [31:0] new_pc_w;
 
 
 
@@ -95,7 +99,7 @@ PC
 (
 	.clk(clk),
 	.reset(reset),
-	.new_pc_i(pc_plus_4_w),
+	.new_pc_i(new_pc_w),
 	.pc_value_o(pc_w)
 );
 
@@ -266,6 +270,40 @@ MUX_SHIFTLOGIC_OR_WRITE_BACK
 
 assign alu_result_o = write_data_reg_file_w;
 
+//******************************************************************/
+//******************************************************************/
+//*********************** branch control ***************************/
+//******************************************************************/
+//******************************************************************/
+
+Adder
+BRANCH_DIRECTION
+(
+	.data_0_i(pc_plus_4_w),
+	.data_1_i(sl2_imm_w),
+	.result_o(branch_address_w)
+);
+
+Shift_Left_2 
+SHIFT_LEFT_2_EXT_IMMEDIATE
+(   
+	.data_i(inmmediate_extend_w),
+	.data_o(sl2_imm_w)
+);
+
+Multiplexer_2_to_1
+#(
+	.N_BITS(32)
+)
+PC_PLUS4_OR_BRANCH
+(
+	.selector_i(is_branch_w),
+	.data_0_i(pc_plus_4_w),
+	.data_1_i(branch_address_w),
+	.mux_o(new_pc_w)
+);
+
+assign is_branch_w = (branch_ne_w & ~zero_w) | (branch_eq_w & zero_w);
 
 endmodule
 
