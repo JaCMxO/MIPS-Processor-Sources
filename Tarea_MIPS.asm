@@ -1,5 +1,6 @@
 .data
 .text
+main:
 	lui		$s0, 0x1001
 	ori		$s1, $s0, 0x24
 	addi	$s2, $zero, 1
@@ -20,6 +21,21 @@ isZero:
 
 notZero:
 	addi	$t5, $zero, 8
+	
+	jal		sumt0
+	
+next:
+	addi	$t9, $zero, 0xA
+	j		exit
+	
+
+sumt0:
+	addi	$t0, $t0, 5
+	jr		$ra
+
+exit:
+
+
 	
 	#assign real_address_w = {2'b00, address_i[DATA_WIDTH-1:29], 1'b0, address_i[27:17], 1'b0, address_i[15:2]};
 	#//shift 2 times right (divide by 4) and subtract 0x0040_0000 from logical address

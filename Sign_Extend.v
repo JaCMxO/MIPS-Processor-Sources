@@ -13,10 +13,16 @@
 ******************************************************************/
 module Sign_Extend
 (   
+	input logic_ext_i,
 	input [15:0]  data_i,
-   output[31:0] sign_extend_o
+	output reg [31:0] sign_extend_o
 );
 
-assign  sign_extend_o = {{16{data_i[15]}},data_i[15:0]};
+always @(data_i or logic_ext_i) begin
+	if(logic_ext_i)
+		sign_extend_o = {{16{1'b0}}, data_i[15:0]};
+	else
+		sign_extend_o = {{16{data_i[15]}},data_i[15:0]};
+end
 
 endmodule // signExtend

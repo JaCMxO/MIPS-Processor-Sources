@@ -27,7 +27,7 @@
 
 module MIPS_Processor
 #(
-	parameter MEMORY_DEPTH = 32
+	parameter MEMORY_DEPTH = 256
 )
 (
 	// Inputs
@@ -51,9 +51,15 @@ wire shift_w;
 wire branch_ne_w;
 wire branch_eq_w;
 wire is_branch_w;
+wire jal_ctl_w;
+wire logic_ext_w;
+wire [1:0] jmp_ctl_ctl_w;
+wire [1:0] jmp_ctl_w;
+wire [1:0] jmp_ctl_alu_ctl_w;
 wire [2:0] alu_op_w;
 wire [3:0] alu_operation_w;
 wire [4:0] write_register_w;
+wire [4:0] regs_dst_w;
 wire [31:0] pc_w;
 wire [31:0] instruction_w;
 wire [31:0] read_data_1_w;
@@ -69,6 +75,9 @@ wire [31:0] write_data_reg_file_w;
 wire [31:0] sl2_imm_w;
 wire [31:0] branch_address_w;
 wire [31:0] new_pc_w;
+wire [31:0] pc_no_jmp_w;
+wire [31:0] jmp_address_w;
+wire [31:0] mux_wr_data_or_pc_plus_4_w;
 
 
 
@@ -83,6 +92,9 @@ Control
 CONTROL_UNIT
 (
 	.opcode_i(instruction_w[31:26]),
+	.logic_ext_o(logic_ext_w),
+	.jal_ctl_o(jal_ctl_w),
+	.jmp_ctl_o(jmp_ctl_ctl_w),
 	.reg_dst_o(reg_dst_w),
 	.branch_ne_o(branch_ne_w),
 	.branch_eq_o(branch_eq_w),
@@ -130,9 +142,10 @@ PC_Puls_4
 Data_Memory 
 #
 (	
-	.DATA_WIDTH(32)
+	.DATA_WIDTH(32),
+	.MEMORY_DEPTH(256)
 )
-DATA_MEMORY
+DATA_MEMORY			//create data memory instance
 (
 	.clk(clk),
 	.mem_read_i(mem_read_w),
@@ -146,7 +159,7 @@ Multiplexer_2_to_1
 #(
 	.N_BITS(32)
 )
-MUX_READ_DATA_MEM_OR_ALU_RESULT
+MUX_READ_DATA_MEM_OR_ALU_RESULT		//4	
 (
 	.selector_i(mem_to_reg_w),
 	.data_0_i(alu_result_w),
@@ -164,13 +177,13 @@ Multiplexer_2_to_1
 #(
 	.N_BITS(5)
 )
-MUX_R_TYPE_OR_I_Type
+MUX_R_TYPE_OR_I_Type			//0
 (
 	.selector_i(reg_dst_w),
 	.data_0_i(instruction_w[20:16]),
 	.data_1_i(instruction_w[15:11]),
 	
-	.mux_o(write_register_w)
+	.mux_o(regs_dst_w)
 
 );
 
@@ -185,15 +198,39 @@ REGISTER_FILE_UNIT
 	.write_register_i(write_register_w),
 	.read_register_1_i(instruction_w[25:21]),
 	.read_register_2_i(instruction_w[20:16]),
-	.write_data_i(write_data_reg_file_w),
+	.write_data_i(mux_wr_data_or_pc_plus_4_w),
 	.read_data_1_o(read_data_1_w),
 	.read_data_2_o(read_data_2_w)
+);
 
+Multiplexer_2_to_1
+#(
+	.N_BITS(32)
+)
+MUX_WRITE_DATA_OR_PC_PLUS_4		//1
+(
+	.selector_i(jal_ctl_w),
+	.data_0_i(write_data_reg_file_w),
+	.data_1_i(pc_plus_4_w),
+	.mux_o(mux_wr_data_or_pc_plus_4_w)
+);
+
+Multiplexer_2_to_1
+#(
+	.N_BITS(5)
+)
+MUX_RA_OR_REGS			//2
+(
+	.selector_i(jal_ctl_w),
+	.data_0_i(regs_dst_w),
+	.data_1_i(5'd31),
+	.mux_o(write_register_w)
 );
 
 Sign_Extend
-SIGNED_EXTEND_FOR_CONSTANTS
+SIGNED_EXTEND_FOR_CONSTANTS	
 (   
+	.logic_ext_i(logic_ext_w),
 	.data_i(instruction_w[15:0]),
 	.sign_extend_o(inmmediate_extend_w)
 );
@@ -204,7 +241,7 @@ Multiplexer_2_to_1
 #(
 	.N_BITS(32)
 )
-MUX_READ_DATA_2_OR_IMMEDIATE
+MUX_READ_DATA_2_OR_IMMEDIATE		//3
 (
 	.selector_i(alu_rc_w),
 	.data_0_i(read_data_2_w),
@@ -220,8 +257,8 @@ ALU_CTRL
 (
 	.alu_op_i(alu_op_w),
 	.alu_function_i(instruction_w[5:0]),
-	.alu_operation_o(alu_operation_w)
-
+	.alu_operation_o(alu_operation_w),
+	.jmp_ctl_o(jmp_ctl_alu_ctl_w)
 );
 
 
@@ -257,7 +294,7 @@ Multiplexer_2_to_1
 #(
 	.N_BITS(32)
 )
-MUX_SHIFTLOGIC_OR_WRITE_BACK
+MUX_SHIFTLOGIC_OR_WRITE_BACK		//6
 (
 	.selector_i(shift_w),
 	.data_0_i(write_back_w),
@@ -295,15 +332,45 @@ Multiplexer_2_to_1
 #(
 	.N_BITS(32)
 )
-PC_PLUS4_OR_BRANCH
+PC_PLUS4_OR_BRANCH			//5
 (
 	.selector_i(is_branch_w),
 	.data_0_i(pc_plus_4_w),
 	.data_1_i(branch_address_w),
-	.mux_o(new_pc_w)
+	.mux_o(pc_no_jmp_w)
 );
 
 assign is_branch_w = (branch_ne_w & ~zero_w) | (branch_eq_w & zero_w);
+
+
+//******************************************************************/
+//******************************************************************/
+//*********************** jump control *****************************/
+//******************************************************************/
+//******************************************************************/
+
+Jump_Address 
+JMP_ADDRESS
+(
+	.pc_plus_4_i(pc_plus_4_w),
+	.address_i(instruction_w[25:0]),
+	.jmp_address_o(jmp_address_w)
+);
+
+Multiplexer_3_to_1
+#(
+	.N_BITS(32)
+)
+MUX_JMP_CTL
+(
+	.selector_i(jmp_ctl_w),
+	.data_0_i(pc_no_jmp_w),
+	.data_1_i(jmp_address_w),
+	.data_2_i(read_data_1_w),
+	.mux_o(new_pc_w)
+);
+
+assign jmp_ctl_w = jmp_ctl_ctl_w | jmp_ctl_alu_ctl_w;
 
 endmodule
 

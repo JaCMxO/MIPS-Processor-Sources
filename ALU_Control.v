@@ -17,6 +17,7 @@ module ALU_Control
 	input [2:0] alu_op_i,
 	input [5:0] alu_function_i,
 	
+	output reg [1:0] jmp_ctl_o,
 	output [3:0] alu_operation_o
 
 );
@@ -27,6 +28,7 @@ localparam R_TYPE_SUB 		= 9'b111_100010;
 localparam R_TYPE_OR 		= 9'b111_100101;
 localparam R_TYPE_AND 		= 9'b111_100100;
 localparam R_TYPE_NOR		= 9'b111_100111;
+localparam R_TYPE_JR 		= 9'b111_001000;
 localparam I_TYPE_ADDI		= 9'b100_xxxxxx;
 localparam I_TYPE_ORI 		= 9'b101_xxxxxx;
 localparam I_TYPE_ANDI 		= 9'b001_xxxxxx;
@@ -44,17 +46,18 @@ always@(selector_w)begin
 
 	casex(selector_w)
 	
-		R_TYPE_ADD		: alu_control_values_r = 4'b0011;
-		I_TYPE_ADDI		: alu_control_values_r = 4'b0011;
-		I_TYPE_ORI		: alu_control_values_r = 4'b0010;
-		R_TYPE_SUB		: alu_control_values_r = 4'b0100;
-		I_TYPE_LUI		: alu_control_values_r = 4'b0101;
-		R_TYPE_OR		: alu_control_values_r = 4'b0010;
-		R_TYPE_AND		: alu_control_values_r = 4'b0110;
-		I_TYPE_ANDI		: alu_control_values_r = 4'b0110;
-		R_TYPE_NOR		: alu_control_values_r = 4'b0111;
-		I_TYPE_SLW		: alu_control_values_r = 4'b0011;
-		I_TYPE_BNE_BEQ	: alu_control_values_r = 4'b0100;
+		R_TYPE_ADD		: begin alu_control_values_r = 4'b0011; jmp_ctl_o = 2'b00; end
+		I_TYPE_ADDI		: begin alu_control_values_r = 4'b0011; jmp_ctl_o = 2'b00; end
+		I_TYPE_ORI		: begin alu_control_values_r = 4'b0010; jmp_ctl_o = 2'b00; end
+		R_TYPE_SUB		: begin alu_control_values_r = 4'b0100; jmp_ctl_o = 2'b00; end
+		I_TYPE_LUI		: begin alu_control_values_r = 4'b0101; jmp_ctl_o = 2'b00; end
+		R_TYPE_OR		: begin alu_control_values_r = 4'b0010; jmp_ctl_o = 2'b00; end
+		R_TYPE_AND		: begin alu_control_values_r = 4'b0110; jmp_ctl_o = 2'b00; end
+		I_TYPE_ANDI		: begin alu_control_values_r = 4'b0110; jmp_ctl_o = 2'b00; end
+		R_TYPE_NOR		: begin alu_control_values_r = 4'b0111; jmp_ctl_o = 2'b00; end
+		I_TYPE_SLW		: begin alu_control_values_r = 4'b0011; jmp_ctl_o = 2'b00; end
+		I_TYPE_BNE_BEQ	: begin alu_control_values_r = 4'b0100; jmp_ctl_o = 2'b00; end
+		R_TYPE_JR		: begin alu_control_values_r = 4'b1001; jmp_ctl_o = 2'b10; end
 
 		default: alu_control_values_r = 4'b1001;
 	endcase

@@ -398,6 +398,9 @@ gp
 
 
 Register
+#(
+	.RST_VALUE(32'h1001_03fc)
+)
 sp
 (
 	.clk(clk),
