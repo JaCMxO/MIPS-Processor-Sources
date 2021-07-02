@@ -59,7 +59,7 @@ always@(selector_w)begin
 		I_TYPE_BNE_BEQ	: begin alu_control_values_r = 4'b0100; jmp_ctl_o = 2'b00; end
 		R_TYPE_JR		: begin alu_control_values_r = 4'b1001; jmp_ctl_o = 2'b10; end
 
-		default: alu_control_values_r = 4'b1001;
+		default: begin alu_control_values_r = 4'b1001; jmp_ctl_o = 2'b00; end
 	endcase
 	
 end
